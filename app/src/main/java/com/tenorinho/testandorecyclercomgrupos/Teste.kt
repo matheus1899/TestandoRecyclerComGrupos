@@ -1,53 +1,75 @@
 package com.tenorinho.testandorecyclercomgrupos
 
 fun main(){
-    val lista = getListaGrupo()
-    val total = getTotalItens(lista)
+    val lista:List<Grupo> = getListaGrupo()
+    val total:Int = getTotalItens(lista)
 
-    for(pos in 0..total-1){
+    for(pos:Int  in 0 until total){
+        // Partindo do pressuposto de
+        // que 0 é o cabecalho
         if(pos == 0){
             println(lista[0].Nome)
             continue
         }
-        val numero_de_grupos = lista.size
-        var quantidade_itens = 0
-        for(grupo in 1..numero_de_grupos){
+        val quantidadeDeGrupos:Int = lista.size
+        var quantidadeDeItens = 0
+        for(grupo:Int in 1..quantidadeDeGrupos){
             var c = 0
-            for(n in grupo downTo 1){
+            for(n:Int in grupo downTo 1){
                 c += lista[n-1].ListaContatos.size
             }
+            // Defini se a posicao atual
+            // pertence a este grupo
             if(pos >= grupo + c){
-                quantidade_itens = grupo + c
+                quantidadeDeItens = grupo + c
                 continue
             }
             else{
-                //primeiro grupo
-                if(quantidade_itens == 0) {
-                    val contato = lista[grupo - 1].ListaContatos[pos - grupo]
+                //Primeiro grupo
+                if(quantidadeDeItens == 0){
+                    //CABECALHO [0]
+                    //ITEM      [1 - GRUPO] = 0
+                    //ITEM      [2 - GRUPO] = 1
+                    val contato:String = lista[grupo - 1].ListaContatos[pos - grupo]
                     println("  $contato")
                 }
-                //outros grupos
+                //Outros grupos
                 else{
-                    if(pos == quantidade_itens){
-                        var nome = lista[grupo-1].Nome
+                    //CABECALHO[0] → QUANT = 1
+                    // ITEM    [1] → QUANT = 2
+                    //CABECALHO[2]  _________▲
+                    if(pos == quantidadeDeItens){
+                        val nome:String = lista[grupo-1].Nome
                         println(nome)
                     }
+                    //Necessário pegar a quantidade
+                    //de itens de grupos anteriores
                     else{
-                        var quantidadeGruposAnterior = 0
-                        for(i in 1..grupo-1){
-                            quantidadeGruposAnterior += lista[i-1].ListaContatos.size+1
+                        var quantDeItensAnteriores = 0
+                        for(i:Int in 1 until grupo){
+                            quantDeItensAnteriores += lista[i-1].ListaContatos.size+1 //+1 PARA CONTAR O CABECALHO
                         }
-                        quantidadeGruposAnterior++
-                        val contato = lista[grupo-1].ListaContatos[pos-quantidadeGruposAnterior]
+                        quantDeItensAnteriores++
+                        // pos                    = 22
+                        // quantDeItensAnteriores = 20
+                        // ---------------------------
+                        //                           2
+                        // ListaContato[2]___________▲
+                        val contato:String = lista[grupo-1].ListaContatos[pos - quantDeItensAnteriores]
                         println("  $contato")
                     }
                 }
-                quantidade_itens = 0
+                quantidadeDeItens = 0
                 break
             }
         }
     }
-    /*for(pos in 0..total-1){
+
+    //Trecho que pega apenas o tipo(se é cabecalho ou não)
+    // H = Cabecalho
+    // I = Item
+
+    /*for(pos:Int in 0 until total){
         if(pos == 0){
             print("\nH\n")
             continue
