@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract
+import androidx.core.database.getStringOrNull
 import androidx.recyclerview.widget.RecyclerView
 import com.tenorinho.testandorecyclercomgrupos.ui.adapter.ContatoAdapter
 import com.tenorinho.testandorecyclercomgrupos.R
@@ -50,20 +51,37 @@ class MainActivity : AppCompatActivity() {
     }
     class GetContatosTask : AsyncTask<Activity, Unit, ArrayList<Grupo>>(){
         override fun doInBackground(vararg p0: Activity): ArrayList<Grupo> {
-            val c:Cursor? = p0[0].contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null,null)
+            val c:Cursor? = p0[0].contentResolver.query(
+                    ContactsContract.Contacts.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    ContactsContract.Contacts.DISPLAY_NAME+" ASC")
             c?.moveToFirst()
             val lista_contato = ArrayList<Contato>()
             val grupo_contato = ArrayList<Grupo>()
             if(c != null) {
                 do {
-                    lista_contato.add(Contato(c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))))
-                }
-                while (c.moveToNext())
+                    val contato = Contato(
+                        c.getString(c.getColumnIndex(ContactsContract.Contacts._ID)),
+                        c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)))
+
+                    if(c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) != "0"){
+                        val c2:Cursor? = p0[0].contentResolver.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID+" = ?", Array<String>(1){contato._id}, null)
+                        if(c2 != null){
+                            c2.moveToFirst()
+                            contato.numero = c2.getString(c2.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)) ?: ""
+                        }
+                    }
+                    lista_contato.add(contato)
+
+                } while (c.moveToNext())
             }
-            lista_contato.sortBy { it.nome }
             val listaLetras = ArrayList<Char>()
             lista_contato.forEach {
-                var letra:Char = it.nome.replace('Á','A')[0]
+                val letra:Char = it.nome.replace('Á','A')[0]
                 if(!listaLetras.contains(letra)){
                     listaLetras.add(letra)
                 }

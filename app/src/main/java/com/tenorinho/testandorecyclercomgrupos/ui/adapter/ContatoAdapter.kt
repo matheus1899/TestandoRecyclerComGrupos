@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tenorinho.testandorecyclercomgrupos.R
+import com.tenorinho.testandorecyclercomgrupos.model.Contato
 import com.tenorinho.testandorecyclercomgrupos.model.Grupo
 
 class ContatoAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -61,11 +62,21 @@ class ContatoAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder> {
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if(holder is ContatoHolder){
             val h: ContatoHolder = holder as ContatoHolder
-            h.txtNomeContato.text = getObjectByPosition(position)
+            val obj:Any = getObjectByPosition(position)
+            if(obj is Contato){
+                h.txtNomeContato.text = obj.nome
+                if(!obj.numero.isNullOrBlank()){
+                    h.txtNumeroContato.visibility = View.VISIBLE
+                    h.txtNumeroContato.text = obj.numero
+                }
+            }
         }
         if(holder is CabecalhoHolder){
             val h: CabecalhoHolder = holder as CabecalhoHolder
-            h.txtNomeGrupo.text = getObjectByPosition(position)
+            val obj:Any = getObjectByPosition(position)
+            if(obj is Grupo){
+                h.txtNomeGrupo.text = obj.nome
+            }
         }
     }
     private fun getNumeroTotalDeItens():Int{
@@ -76,11 +87,11 @@ class ContatoAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         return quantidade
     }
-    private fun getObjectByPosition(position:Int):String{
+    private fun getObjectByPosition(position:Int):Any{
         if(position == 0){
-            return lista[0].nome
+            return lista[0]
         }
-        var stringParaRetorno = ""
+        var objParaRetorno = Any()
         val numeroDeGrupos:Int = lista.size
         var quantidadeItens = 0
         for(grupo:Int in 1..numeroDeGrupos){
@@ -95,13 +106,13 @@ class ContatoAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder> {
             else{
                 //primeiro grupo
                 if(quantidadeItens == 0) {
-                    stringParaRetorno = lista[grupo - 1].listaContatos[position - grupo].nome
+                    objParaRetorno = lista[grupo - 1].listaContatos[position - grupo]
                     break
                 }
                 //outros grupos
                 else{
                     if(position == quantidadeItens){
-                        stringParaRetorno = lista[grupo-1].nome
+                        objParaRetorno = lista[grupo-1]
                         break
                     }
                     else{
@@ -110,14 +121,14 @@ class ContatoAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             quantidadeGruposAnterior += lista[i-1].listaContatos.size+1
                         }
                         quantidadeGruposAnterior++
-                        stringParaRetorno = lista[grupo-1].listaContatos[position - quantidadeGruposAnterior].nome
+                        objParaRetorno = lista[grupo-1].listaContatos[position - quantidadeGruposAnterior]
                     }
                 }
                 quantidadeItens = 0
                 break
             }
         }
-        return stringParaRetorno
+        return objParaRetorno
     }
     class CabecalhoHolder:RecyclerView.ViewHolder{
         val txtNomeGrupo:TextView
@@ -127,8 +138,10 @@ class ContatoAdapter:RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
     class ContatoHolder:RecyclerView.ViewHolder{
         val txtNomeContato:TextView
+        val txtNumeroContato:TextView
         constructor(view: View):super(view){
             txtNomeContato = view.findViewById(R.id.item_contato_nome)
+            txtNumeroContato = view.findViewById(R.id.item_contato_numero)
         }
     }
 }
